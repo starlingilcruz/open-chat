@@ -187,14 +187,20 @@ jobs:
           kubectl create namespace ${{ secrets.K3S_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Create image pull secret (if using private registry)
-        if: secrets.K3S_REGISTRY_SECRET
         run: |
-          kubectl create secret docker-registry regcred \
-            --docker-server=${{ secrets.K3S_REGISTRY_URL }} \
-            --docker-username=${{ secrets.K3S_REGISTRY_USERNAME }} \
-            --docker-password=${{ secrets.K3S_REGISTRY_PASSWORD }} \
-            --namespace=${{ secrets.K3S_NAMESPACE }} \
-            --dry-run=client -o yaml | kubectl apply -f -
+          if [ -n "${{ secrets.K3S_REGISTRY_URL }}" ] && \
+             [ -n "${{ secrets.K3S_REGISTRY_USERNAME }}" ] && \
+             [ -n "${{ secrets.K3S_REGISTRY_PASSWORD }}" ]; then
+            kubectl create secret docker-registry regcred \
+              --docker-server=${{ secrets.K3S_REGISTRY_URL }} \
+              --docker-username=${{ secrets.K3S_REGISTRY_USERNAME }} \
+              --docker-password=${{ secrets.K3S_REGISTRY_PASSWORD }} \
+              --namespace=${{ secrets.K3S_NAMESPACE }} \
+              --dry-run=client -o yaml | kubectl apply -f -
+            echo "✅ Image pull secret created"
+          else
+            echo "ℹ️  Skipping image pull secret (using public registry or GitHub Container Registry)"
+          fi
 
       - name: Prepare Kubernetes manifests
         run: |
