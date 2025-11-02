@@ -136,7 +136,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-            type=sha,prefix={{branch}}-
+            type=sha,prefix={{branch}}-,format=long
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
@@ -186,33 +186,70 @@ jobs:
         run: |
           kubectl create namespace ${{ secrets.K3S_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Create image pull secret (if using private registry)
+      - name: Create image pull secret for GitHub Container Registry
         run: |
-          if [ -n "${{ secrets.K3S_REGISTRY_URL }}" ] && \
-             [ -n "${{ secrets.K3S_REGISTRY_USERNAME }}" ] && \
-             [ -n "${{ secrets.K3S_REGISTRY_PASSWORD }}" ]; then
+          # GitHub Container Registry requires authentication for private packages
+          # Create a secret using GITHUB_TOKEN or personal access token
+          if [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
+            echo "🔐 Creating image pull secret using GHCR_TOKEN..."
+            kubectl create secret docker-registry ghcr-secret \
+              --docker-server=ghcr.io \
+              --docker-username=${{ github.actor }} \
+              --docker-password="${{ secrets.GHCR_TOKEN }}" \
+              --namespace=${{ secrets.K3S_NAMESPACE }} \
+              --dry-run=client -o yaml | kubectl apply -f -
+            echo "✅ GitHub Container Registry secret created"
+          elif [ -n "${{ secrets.K3S_REGISTRY_URL }}" ] && \
+               [ -n "${{ secrets.K3S_REGISTRY_USERNAME }}" ] && \
+               [ -n "${{ secrets.K3S_REGISTRY_PASSWORD }}" ]; then
+            echo "🔐 Creating image pull secret for custom registry..."
             kubectl create secret docker-registry regcred \
               --docker-server=${{ secrets.K3S_REGISTRY_URL }} \
               --docker-username=${{ secrets.K3S_REGISTRY_USERNAME }} \
-              --docker-password=${{ secrets.K3S_REGISTRY_PASSWORD }} \
+              --docker-password="${{ secrets.K3S_REGISTRY_PASSWORD }}" \
               --namespace=${{ secrets.K3S_NAMESPACE }} \
               --dry-run=client -o yaml | kubectl apply -f -
-            echo "✅ Image pull secret created"
+            echo "✅ Custom registry secret created"
           else
-            echo "ℹ️  Skipping image pull secret (using public registry or GitHub Container Registry)"
+            echo "⚠️  No image pull secret configured"
+            echo "ℹ️  If image is private, add GHCR_TOKEN secret or configure registry secrets"
+            echo "ℹ️  For public packages, this is fine"
           fi
 
       - name: Prepare Kubernetes manifests
         run: |
-          # Set image tag based on branch and commit
+          # Use the same tag format as the build step (development-{full-sha})
           IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:development-${{ github.sha }}"
-          # Replace image in deployment.yaml (handles both placeholder formats)
+          echo "📦 Using image tag: $IMAGE_TAG"
+
+          # Replace image in deployment.yaml
           if grep -q "PLACEHOLDER_REPO" k8s/deployment.yaml; then
             sed -i.bak "s|ghcr.io/PLACEHOLDER_REPO:development-latest|$IMAGE_TAG|g" k8s/deployment.yaml
           else
-            sed -i.bak "s|image:.*|image: $IMAGE_TAG|g" k8s/deployment.yaml
+            sed -i.bak "s|image:.*openchat-web.*|image: $IMAGE_TAG|g" k8s/deployment.yaml
           fi
+
+          # Add imagePullSecrets if we created a secret (for private images)
+          SECRET_NAME=""
+          if [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
+            SECRET_NAME="ghcr-secret"
+          elif [ -n "${{ secrets.K3S_REGISTRY_URL }}" ]; then
+            SECRET_NAME="regcred"
+          fi
+
+          if [ -n "$SECRET_NAME" ]; then
+            echo "🔐 Adding imagePullSecrets to deployment..."
+            # Add imagePullSecrets after the spec line using awk for better YAML handling
+            if ! grep -q "imagePullSecrets:" k8s/deployment.yaml; then
+              awk -v secret="$SECRET_NAME" '/^    spec:/ { print; print "      imagePullSecrets:"; print "      - name: " secret; next } { print }' k8s/deployment.yaml > k8s/deployment.yaml.tmp && mv k8s/deployment.yaml.tmp k8s/deployment.yaml
+            fi
+          fi
+
           rm -f k8s/deployment.yaml.bak
+          echo "✅ Updated deployment.yaml with image: $IMAGE_TAG"
+          echo ""
+          echo "📋 Verifying deployment manifest:"
+          grep -A 2 "image:" k8s/deployment.yaml || true
 
       - name: Deploy to k3s
         run: |
