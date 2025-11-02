@@ -303,6 +303,9 @@ jobs:
           echo "📦 Current pods:"
           kubectl get pods -n ${{ secrets.K3S_NAMESPACE }} || true
           echo ""
+          echo "📋 Pod logs (last 50 lines):"
+          kubectl logs -l app=openchat,component=web -n ${{ secrets.K3S_NAMESPACE }} --tail=50 || true
+          echo ""
           echo "🔍 Checking pod events:"
           kubectl get events -n ${{ secrets.K3S_NAMESPACE }} --sort-by='.lastTimestamp' | tail -20 || true
 
