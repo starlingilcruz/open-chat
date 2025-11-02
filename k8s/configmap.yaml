@@ -11,3 +11,4 @@ data:
   REDIS_HOST: "openchat-redis"
   DEBUG: "True"
   DJANGO_SETTINGS_MODULE: "openchat.settings.dev"
+  ALLOWED_HOSTS: "*"
