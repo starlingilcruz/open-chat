@@ -291,6 +291,16 @@ jobs:
             --namespace=${{ secrets.K3S_NAMESPACE }} \
             --timeout=5m || true
 
+          # Verify Redis is actually responding
+          echo "🔍 Verifying Redis connectivity..."
+          REDIS_POD=$(kubectl get pods -n ${{ secrets.K3S_NAMESPACE }} -l app=openchat,component=redis -o jsonpath='{.items[0].metadata.name}' || echo "")
+          if [ -n "$REDIS_POD" ]; then
+            echo "Redis pod: $REDIS_POD"
+            kubectl exec -n ${{ secrets.K3S_NAMESPACE }} $REDIS_POD -- redis-cli ping || echo "⚠️  Redis ping failed"
+          else
+            echo "⚠️  No Redis pod found"
+          fi
+
           # Deploy application
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
