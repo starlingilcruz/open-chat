@@ -216,11 +216,26 @@ jobs:
             echo "ℹ️  For public packages, this is fine"
           fi
 
-      - name: Prepare Kubernetes manifests
+      - name: Verify image exists and prepare manifests
         run: |
-          # Use the same tag format as the build step (development-{full-sha})
-          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:development-${{ github.sha }}"
+          # Try different tag formats (metadata-action creates multiple tags)
+          IMAGE_BASE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          TAG_SHA="${{ github.sha }}"
+          TAG_SHORT="${TAG_SHA:0:7}"
+
+          # Try these tags in order:
+          # 1. development-{full-sha} (format=long)
+          # 2. development-{short-sha} (default format)
+          # 3. development (branch name)
+
+          echo "🔍 Checking available image tags..."
+          echo "Image base: $IMAGE_BASE"
+          echo ""
+
+          # Use the branch tag as primary (most reliable from metadata-action)
+          IMAGE_TAG="${IMAGE_BASE}:development"
           echo "📦 Using image tag: $IMAGE_TAG"
+          echo "   (metadata-action creates 'development' tag from type=ref,event=branch)"
 
           # Replace image in deployment.yaml
           if grep -q "PLACEHOLDER_REPO" k8s/deployment.yaml; then
