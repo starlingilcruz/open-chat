@@ -14,7 +14,6 @@ on:
 
 jobs:
   setup:
-    name: Setup Python and Dependencies
     runs-on: ubuntu-latest
     timeout-minutes: 10
 

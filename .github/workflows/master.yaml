@@ -8,16 +8,19 @@ on:
 
 jobs:
   setup:
+    name: Setup Python and Dependencies
     uses: ./.github/workflows/reusable-setup.yml
     with:
       python_version: '3.9'
       install_dev_dependencies: true
 
   lint:
+    name: Run Linting and Format Checks
     uses: ./.github/workflows/reusable-lint.yml
     needs: setup
 
   test:
+    name: Run Tests
     uses: ./.github/workflows/reusable-test.yml
     needs: [setup, lint]
     with:

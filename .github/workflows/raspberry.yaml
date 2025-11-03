@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   setup:
+    name: Setup Python and Dependencies
     uses: ./.github/workflows/reusable-setup.yml
     if: github.ref == 'refs/heads/development'
     with:
@@ -25,11 +26,13 @@ jobs:
       install_dev_dependencies: true
 
   lint:
+    name: Run Linting and Format Checks
     uses: ./.github/workflows/reusable-lint.yml
     if: github.ref == 'refs/heads/development'
     needs: setup
 
   test:
+    name: Run Tests
     uses: ./.github/workflows/reusable-test.yml
     if: github.ref == 'refs/heads/development'
     needs: [setup, lint]
@@ -38,6 +41,7 @@ jobs:
       upload_coverage: true
 
   build:
+    name: Build Docker Image
     uses: ./.github/workflows/reusable-build-docker.yml
     if: github.ref == 'refs/heads/development'
     needs: [setup, lint, test]
