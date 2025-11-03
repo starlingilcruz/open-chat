@@ -13,12 +13,6 @@ on:
         default: true
 
 jobs:
-  setup:
-    uses: ./.github/workflows/reusable-setup.yml
-    with:
-      python_version: ${{ inputs.python_version }}
-      install_dev_dependencies: true
-
   test:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -53,6 +47,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -e ".[dev]"
+
       - name: Run tests
         env:
           DJANGO_SECRET_KEY: test-secret-key-for-ci
