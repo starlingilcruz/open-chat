@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openchat-config
+  namespace: openchat
+data:
+  POSTGRES_HOST: "openchat-db"
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: "openchat"
+  REDIS_URL: "redis://openchat-redis:6379/0"
+  REDIS_HOST: "openchat-redis"
+  DEBUG: "True"
+  DJANGO_SETTINGS_MODULE: "openchat.settings.dev"
+  ALLOWED_HOSTS: "*"

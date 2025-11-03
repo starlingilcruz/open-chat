@@ -16,7 +16,12 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-me-in-produc
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+# Parse ALLOWED_HOSTS - allow "*" for development/kubernetes
+allowed_hosts_str = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+if allowed_hosts_str == "*":
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(",") if host.strip()]
 
 # Application definition
 INSTALLED_APPS = [
