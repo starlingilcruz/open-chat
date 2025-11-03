@@ -1,4 +1,4 @@
-name: open-chat CI
+name: CI - Master Branch
 
 on:
   push:
