@@ -18,19 +18,19 @@ concurrency:
 
 jobs:
   setup:
-    uses: ./.github/workflows/reusable/setup.yml
+    uses: ./.github/workflows/reusable-setup.yml
     if: github.ref == 'refs/heads/development'
     with:
       python_version: "3.11"
       install_dev_dependencies: true
 
   lint:
-    uses: ./.github/workflows/reusable/lint.yml
+    uses: ./.github/workflows/reusable-lint.yml
     if: github.ref == 'refs/heads/development'
     needs: setup
 
   test:
-    uses: ./.github/workflows/reusable/test.yml
+    uses: ./.github/workflows/reusable-test.yml
     if: github.ref == 'refs/heads/development'
     needs: [setup, lint]
     with:
@@ -38,7 +38,7 @@ jobs:
       upload_coverage: true
 
   build:
-    uses: ./.github/workflows/reusable/build-docker.yml
+    uses: ./.github/workflows/reusable-build-docker.yml
     if: github.ref == 'refs/heads/development'
     needs: [setup, lint, test]
     with:
