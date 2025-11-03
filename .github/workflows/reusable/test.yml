@@ -14,7 +14,7 @@ on:
 
 jobs:
   setup:
-    uses: ./.github/workflows/setup.yml
+    uses: ./.github/workflows/reusable/setup.yml
     with:
       python_version: ${{ inputs.python_version }}
       install_dev_dependencies: true
