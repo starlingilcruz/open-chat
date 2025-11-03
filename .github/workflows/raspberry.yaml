@@ -21,7 +21,7 @@ jobs:
     uses: ./.github/workflows/reusable/setup.yml
     if: github.ref == 'refs/heads/development'
     with:
-      python_version: ${{ env.PYTHON_VERSION }}
+      python_version: "3.11"
       install_dev_dependencies: true
 
   lint:
@@ -34,7 +34,7 @@ jobs:
     if: github.ref == 'refs/heads/development'
     needs: [setup, lint]
     with:
-      python_version: ${{ env.PYTHON_VERSION }}
+      python_version: "3.11"
       upload_coverage: true
 
   build:
@@ -43,8 +43,8 @@ jobs:
     needs: [setup, lint, test]
     with:
       push_image: true
-      registry: ${{ env.REGISTRY }}
-      image_name: ${{ env.IMAGE_NAME }}
+      registry: "ghcr.io"
+      image_name: ${{ github.repository }}
       platforms: |
         linux/amd64
         linux/arm64
@@ -115,7 +115,7 @@ jobs:
       - name: Verify image exists and prepare manifests
         run: |
           # Try different tag formats (metadata-action creates multiple tags)
-          IMAGE_BASE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          IMAGE_BASE="ghcr.io/${{ github.repository }}"
           TAG_SHA="${{ github.sha }}"
           TAG_SHORT="${TAG_SHA:0:7}"
 
