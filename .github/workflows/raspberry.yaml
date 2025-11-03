@@ -17,9 +17,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  setup:
+    uses: ./.github/workflows/setup.yml
+    if: github.ref == 'refs/heads/development'
+    with:
+      python_version: ${{ env.PYTHON_VERSION }}
+      install_dev_dependencies: true
+
+  lint:
+    uses: ./.github/workflows/lint.yml
+    if: github.ref == 'refs/heads/development'
+    needs: setup
+
   test:
     uses: ./.github/workflows/test.yml
     if: github.ref == 'refs/heads/development'
+    needs: [setup, lint]
     with:
       python_version: ${{ env.PYTHON_VERSION }}
       upload_coverage: true
@@ -27,7 +40,7 @@ jobs:
   build:
     uses: ./.github/workflows/build-docker.yml
     if: github.ref == 'refs/heads/development'
-    needs: test
+    needs: [setup, lint, test]
     with:
       push_image: true
       registry: ${{ env.REGISTRY }}
