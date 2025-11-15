@@ -12,3 +12,4 @@ data:
   DEBUG: "True"
   DJANGO_SETTINGS_MODULE: "openchat.settings.dev"
   ALLOWED_HOSTS: "*"
+  CSRF_TRUSTED_ORIGINS: "https://rocketbyte.duckdns.org,http://rocketbyte.duckdns.org"
