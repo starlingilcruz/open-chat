@@ -17,7 +17,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-me-in-produc
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 # Parse ALLOWED_HOSTS - allow "*" for development/kubernetes
-allowed_hosts_str = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+allowed_hosts_str = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1", "rocketbyte.duckdns.org")
 if allowed_hosts_str == "*":
     ALLOWED_HOSTS = ["*"]
 else:
