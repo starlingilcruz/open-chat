@@ -4,15 +4,15 @@ metadata:
   name: openchat-ingress
   namespace: openchat
   annotations:
-    kubernetes.io/ingress.class: traefik
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
-    - openchat.example.com
+    - rocketbyte.duckdns.org
     secretName: openchat-tls
   rules:
-  - host: openchat.example.com
+  - host: rocketbyte.duckdns.org
     http:
       paths:
       - path: /
