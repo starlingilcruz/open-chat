@@ -23,6 +23,8 @@ if allowed_hosts_str == "*":
 else:
     ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(",") if host.strip()]
 
+CORS_ORIGIN_WHITELIST = ["https://rocketbyte.duckdns.org"]
+
 # Application definition
 INSTALLED_APPS = [
     "daphne",
