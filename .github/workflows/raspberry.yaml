@@ -5,11 +5,6 @@ on:
     branches:
       - development
   workflow_dispatch:
-    inputs:
-      image_tag:
-        description: 'Image tag to deploy (e.g., development, development-abc1234). If not provided, uses the built image tag.'
-        required: false
-        type: string
 
 env:
   PYTHON_VERSION: "3.11"
@@ -66,8 +61,6 @@ jobs:
     environment:
       name: development
     timeout-minutes: 20
-    env:
-      BUILT_IMAGE_TAG: ${{ needs.build.outputs.image-tag }}
 
     steps:
       - name: Checkout code
@@ -125,30 +118,24 @@ jobs:
 
       - name: Verify image exists and prepare manifests
         run: |
+          # Try different tag formats (metadata-action creates multiple tags)
           IMAGE_BASE="ghcr.io/${{ github.repository }}"
+          TAG_SHA="${{ github.sha }}"
+          TAG_SHORT="${TAG_SHA:0:7}"
 
-          # Check if image_tag parameter is provided
-          if [ -n "${{ inputs.image_tag }}" ]; then
-            # Use the provided parameter
-            if [[ "${{ inputs.image_tag }}" == *":"* ]]; then
-              # Full image reference provided
-              IMAGE_TAG="${{ inputs.image_tag }}"
-            else
-              # Just the tag provided, add the base
-              IMAGE_TAG="${IMAGE_BASE}:${{ inputs.image_tag }}"
-            fi
-            echo "📦 Using provided image tag: $IMAGE_TAG"
-          else
-            # Use the built image tag from build job output
-            # The output contains multiple tags separated by newlines, use the first one
-            BUILT_TAG=$(echo "$BUILT_IMAGE_TAG" | head -n1)
-            IMAGE_TAG="$BUILT_TAG"
-            echo "📦 Using built image tag: $IMAGE_TAG"
-            echo "   (from build job output)"
-          fi
+          # Try these tags in order:
+          # 1. development-{full-sha} (format=long)
+          # 2. development-{short-sha} (default format)
+          # 3. development (branch name)
 
-          echo "🔍 Image to deploy: $IMAGE_TAG"
+          echo "🔍 Checking available image tags..."
+          echo "Image base: $IMAGE_BASE"
           echo ""
+
+          # Use the branch tag as primary (most reliable from metadata-action)
+          IMAGE_TAG="${IMAGE_BASE}:development"
+          echo "📦 Using image tag: $IMAGE_TAG"
+          echo "   (metadata-action creates 'development' tag from type=ref,event=branch)"
 
           # Replace image in deployment.yaml
           if grep -q "PLACEHOLDER_REPO" k8s/deployment.yaml; then
@@ -222,7 +209,10 @@ jobs:
         run: |
           echo "📊 Current deployment status:"
           kubectl get deployment openchat-web -n ${{ secrets.K3S_NAMESPACE }} || true
+          echo ""
+          echo "📦 Current pods:"
           kubectl get pods -n ${{ secrets.K3S_NAMESPACE }} || true
+          echo ""
           echo "📋 Pod logs (last 50 lines):"
           kubectl logs -l app=openchat,component=web -n ${{ secrets.K3S_NAMESPACE }} --tail=50 || true
           echo ""
