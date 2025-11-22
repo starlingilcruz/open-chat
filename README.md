@@ -1,6 +1,6 @@
 # Open Chat
 
-[![CI](https://github.com/starlingilcruz/open-chat/actions/workflows/master.yml/badge.svg)](https://github.com/starlingilcruz/open-chat/actions/workflows/master.yml)
+[![CI](https://github.com/starlingilcruz/open-chat/actions/workflows/master.yaml/badge.svg)](https://github.com/starlingilcruz/open-chat/actions/workflows/master.yml)
 [![codecov](https://codecov.io/gh/starlingilcruz/open-chat/branch/master/graph/badge.svg)](https://codecov.io/gh/starlingilcruz/open-chat)
 
 Real-time chat application built with Django, Channels, and Redis Streams.
