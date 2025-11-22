@@ -18,7 +18,7 @@ web:
   image:
     repository: ghcr.io/PLACEHOLDER_REPO
     tag: development-latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always  # Always pull for mutable tags (development, latest, etc.)
 
   imagePullSecrets: []
   # - name: ghcr-secret
