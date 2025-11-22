@@ -1,0 +1,19 @@
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.app.name }}-redis
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "openchat.redis.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.redis.service.port }}
+    targetPort: redis
+    protocol: TCP
+    name: redis
+  selector:
+    app: {{ .Values.app.name }}
+    component: redis
+{{- end }}

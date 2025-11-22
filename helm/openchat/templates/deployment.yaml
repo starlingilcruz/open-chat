@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}-web
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "openchat.web.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+      component: web
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.name }}
+        component: web
+    spec:
+      {{- with .Values.web.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.app.name }}-web
+        image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+        imagePullPolicy: {{ .Values.web.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.web.service.targetPort }}
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.app.name }}-config
+        - secretRef:
+            name: {{ .Values.app.name }}-secrets
+        resources:
+          {{- toYaml .Values.web.resources | nindent 10 }}
+        livenessProbe:
+          {{- toYaml .Values.web.livenessProbe | nindent 10 }}
+        readinessProbe:
+          {{- toYaml .Values.web.readinessProbe | nindent 10 }}
+        volumeMounts:
+        - name: staticfiles
+          mountPath: /app/staticfiles
+      volumes:
+      - name: staticfiles
+        emptyDir: {}

@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ssl-cert-staging
+spec:
+  secretName: ssl-cert-staging
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: rocketbyte.duckdns.org
+  dnsNames:
+    - rocketbyte.duckdns.org

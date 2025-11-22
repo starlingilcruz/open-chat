@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ssl-cert-prod
+spec:
+  secretName: ssl-cert-prod
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: rocketbyte.duckdns.org
+  dnsNames:
+    - rocketbyte.duckdns.org

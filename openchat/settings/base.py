@@ -24,7 +24,18 @@ else:
     ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(",") if host.strip()]
 
 # CSRF trusted origins
-CSRF_TRUSTED_ORIGINS = ["https://rocketbyte.duckdns.org", "http://rocketbyte.duckdns.org"]
+csrf_trusted_origins_str = os.getenv(
+    "CSRF_TRUSTED_ORIGINS", "https://rocketbyte.duckdns.org,http://rocketbyte.duckdns.org"
+)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in csrf_trusted_origins_str.split(",") if origin.strip()
+]
+
+# Proxy SSL header (for when behind nginx/traefik ingress)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Use X-Forwarded-Host header for host validation (for K8s health checks)
+USE_X_FORWARDED_HOST = True
 
 # Application definition
 INSTALLED_APPS = [

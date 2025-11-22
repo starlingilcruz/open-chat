@@ -1,0 +1,18 @@
+{{- if .Values.certManager.enabled }}
+{{- if .Values.certManager.production.enabled }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: {{ .Values.certManager.production.email }}
+    server: {{ .Values.certManager.production.server }}
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: {{ .Values.ingress.className }}
+{{- end }}
+{{- end }}

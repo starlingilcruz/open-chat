@@ -116,70 +116,41 @@ jobs:
             echo "ℹ️  For public packages, this is fine"
           fi
 
-      - name: Verify image exists and prepare manifests
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+
+      - name: Deploy with Helm
         run: |
-          # Try different tag formats (metadata-action creates multiple tags)
           IMAGE_BASE="ghcr.io/${{ github.repository }}"
-          TAG_SHA="${{ github.sha }}"
-          TAG_SHORT="${TAG_SHA:0:7}"
-
-          # Try these tags in order:
-          # 1. development-{full-sha} (format=long)
-          # 2. development-{short-sha} (default format)
-          # 3. development (branch name)
-
-          echo "🔍 Checking available image tags..."
-          echo "Image base: $IMAGE_BASE"
-          echo ""
-
-          # Use the branch tag as primary (most reliable from metadata-action)
           IMAGE_TAG="${IMAGE_BASE}:development"
-          echo "📦 Using image tag: $IMAGE_TAG"
-          echo "   (metadata-action creates 'development' tag from type=ref,event=branch)"
 
-          # Replace image in deployment.yaml
-          if grep -q "PLACEHOLDER_REPO" k8s/deployment.yaml; then
-            sed -i.bak "s|ghcr.io/PLACEHOLDER_REPO:development-latest|$IMAGE_TAG|g" k8s/deployment.yaml
-          else
-            sed -i.bak "s|image:.*openchat-web.*|image: $IMAGE_TAG|g" k8s/deployment.yaml
-          fi
+          echo "📦 Using image: $IMAGE_TAG"
 
-          # Add imagePullSecrets if we created a secret (for private images)
-          SECRET_NAME=""
+          # Prepare Helm values for image pull secrets
+          IMAGE_PULL_SECRETS=""
           if [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
-            SECRET_NAME="ghcr-secret"
+            IMAGE_PULL_SECRETS="--set web.imagePullSecrets[0].name=ghcr-secret"
           elif [ -n "${{ secrets.K3S_REGISTRY_URL }}" ]; then
-            SECRET_NAME="regcred"
+            IMAGE_PULL_SECRETS="--set web.imagePullSecrets[0].name=regcred"
           fi
 
-          if [ -n "$SECRET_NAME" ]; then
-            echo "🔐 Adding imagePullSecrets to deployment..."
-            # Add imagePullSecrets after the spec line using awk for better YAML handling
-            if ! grep -q "imagePullSecrets:" k8s/deployment.yaml; then
-              awk -v secret="$SECRET_NAME" '/^    spec:/ { print; print "      imagePullSecrets:"; print "      - name: " secret; next } { print }' k8s/deployment.yaml > k8s/deployment.yaml.tmp && mv k8s/deployment.yaml.tmp k8s/deployment.yaml
-            fi
-          fi
+          # Deploy using Helm
+          helm upgrade --install openchat ./helm/openchat \
+            --create-namespace \
+            --namespace ${{ secrets.K3S_NAMESPACE }} \
+            --set web.image.repository="${IMAGE_BASE%:*}" \
+            --set web.image.tag="development" \
+            --set global.namespace=${{ secrets.K3S_NAMESPACE }} \
+            $IMAGE_PULL_SECRETS \
+            --wait \
+            --timeout 10m
 
-          rm -f k8s/deployment.yaml.bak
-          echo "✅ Updated deployment.yaml with image: $IMAGE_TAG"
-          echo ""
-          echo "📋 Verifying deployment manifest:"
-          grep -A 2 "image:" k8s/deployment.yaml || true
+          echo "✅ Helm deployment completed"
 
-      - name: Deploy to k3s
+      - name: Wait for dependencies to be ready
         run: |
-          # Apply Kubernetes manifests in order
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/configmap.yaml
-
-          # Deploy database and Redis first
-          kubectl apply -f k8s/postgres-pvc.yaml
-          kubectl apply -f k8s/postgres-deployment.yaml
-          kubectl apply -f k8s/postgres-service.yaml
-          kubectl apply -f k8s/redis-pvc.yaml
-          kubectl apply -f k8s/redis-deployment.yaml
-          kubectl apply -f k8s/redis-service.yaml
-
           # Wait for database and Redis to be ready
           echo "⏳ Waiting for PostgreSQL to be ready..."
           kubectl wait --for=condition=ready pod -l app=openchat,component=db \
@@ -200,10 +171,6 @@ jobs:
           else
             echo "⚠️  No Redis pod found"
           fi
-
-          # Deploy application
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/deployment.yaml
 
       - name: Check deployment status
         run: |

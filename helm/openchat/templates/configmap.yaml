@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.app.name }}-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "openchat.labels" . | nindent 4 }}
+data:
+  POSTGRES_HOST: {{ .Values.config.postgresHost | quote }}
+  POSTGRES_PORT: {{ .Values.config.postgresPort | quote }}
+  POSTGRES_USER: {{ .Values.config.postgresUser | quote }}
+  REDIS_URL: {{ .Values.config.redisUrl | quote }}
+  REDIS_HOST: {{ .Values.config.redisHost | quote }}
+  DEBUG: {{ .Values.config.debug | quote }}
+  DJANGO_SETTINGS_MODULE: {{ .Values.config.djangoSettingsModule | quote }}
+  ALLOWED_HOSTS: {{ .Values.config.allowedHosts | quote }}
+  CSRF_TRUSTED_ORIGINS: {{ .Values.config.csrfTrustedOrigins | quote }}
+  SESSION_COOKIE_SECURE: {{ .Values.config.sessionCookieSecure | quote }}
+  CSRF_COOKIE_SECURE: {{ .Values.config.csrfCookieSecure | quote }}
+  SECURE_SSL_REDIRECT: {{ .Values.config.secureSslRedirect | quote }}
