@@ -35,7 +35,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     container_name: openchat-web
     command: daphne -b 0.0.0.0 -p 8000 openchat.asgi:application
     volumes:

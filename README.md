@@ -1,13 +1,14 @@
 # Open Chat
 
-[![CI](https://github.com/starlingilcruz/django-chat/actions/workflows/master.yml/badge.svg)](https://github.com/starlingilcruz/django-chat/actions/workflows/master.yml)
-[![codecov](https://codecov.io/gh/starlingilcruz/django-chat/branch/master/graph/badge.svg)](https://codecov.io/gh/starlingilcruz/django-chat)
+[![CI](https://github.com/starlingilcruz/open-chat/actions/workflows/master.yml/badge.svg)](https://github.com/starlingilcruz/open-chat/actions/workflows/master.yml)
+[![codecov](https://codecov.io/gh/starlingilcruz/open-chat/branch/master/graph/badge.svg)](https://codecov.io/gh/starlingilcruz/open-chat)
 
 Real-time chat application built with Django, Channels, and Redis Streams.
 
 ## 🚀 Live Demo
 
-**Live Demo App**: [http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com](http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/login)
+**Live App**: [http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com](http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/login)
+***Live App - Development** [https://rocketbyte.duckdns.org](https://rocketbyte.duckdns.org)
 
 ### Test Accounts
 
@@ -21,6 +22,7 @@ You can use these pre-existing accounts to explore the application:
 | root@openchat.com      | Root@123456   | Admin |
 
 **Admin Portal**: [http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/admin](http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/admin)
+***Admin Portal - Development*** [https://rocketbyte.duckdns.org/admin](https://rocketbyte.duckdns.org/admin)
 
 ### Getting Started
 
