@@ -116,55 +116,22 @@ jobs:
             echo "ℹ️  For public packages, this is fine"
           fi
 
-      - name: Verify image exists and prepare manifests
+      - name: Prepare deployment configuration
         run: |
-          # Try different tag formats (metadata-action creates multiple tags)
           IMAGE_BASE="ghcr.io/${{ github.repository }}"
-          TAG_SHA="${{ github.sha }}"
-          TAG_SHORT="${TAG_SHA:0:7}"
-
-          # Try these tags in order:
-          # 1. development-{full-sha} (format=long)
-          # 2. development-{short-sha} (default format)
-          # 3. development (branch name)
-
-          echo "🔍 Checking available image tags..."
-          echo "Image base: $IMAGE_BASE"
-          echo ""
-
-          # Use the branch tag as primary (most reliable from metadata-action)
           IMAGE_TAG="${IMAGE_BASE}:development"
+
           echo "📦 Using image tag: $IMAGE_TAG"
-          echo "   (metadata-action creates 'development' tag from type=ref,event=branch)"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-          # Replace image in deployment.yaml
-          if grep -q "PLACEHOLDER_REPO" k8s/deployment.yaml; then
-            sed -i.bak "s|ghcr.io/PLACEHOLDER_REPO:development-latest|$IMAGE_TAG|g" k8s/deployment.yaml
-          else
-            sed -i.bak "s|image:.*openchat-web.*|image: $IMAGE_TAG|g" k8s/deployment.yaml
-          fi
-
-          # Add imagePullSecrets if we created a secret (for private images)
+          # Determine which image pull secret to use (if any)
           SECRET_NAME=""
           if [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
             SECRET_NAME="ghcr-secret"
           elif [ -n "${{ secrets.K3S_REGISTRY_URL }}" ]; then
             SECRET_NAME="regcred"
           fi
-
-          if [ -n "$SECRET_NAME" ]; then
-            echo "🔐 Adding imagePullSecrets to deployment..."
-            # Add imagePullSecrets after the spec line using awk for better YAML handling
-            if ! grep -q "imagePullSecrets:" k8s/deployment.yaml; then
-              awk -v secret="$SECRET_NAME" '/^    spec:/ { print; print "      imagePullSecrets:"; print "      - name: " secret; next } { print }' k8s/deployment.yaml > k8s/deployment.yaml.tmp && mv k8s/deployment.yaml.tmp k8s/deployment.yaml
-            fi
-          fi
-
-          rm -f k8s/deployment.yaml.bak
-          echo "✅ Updated deployment.yaml with image: $IMAGE_TAG"
-          echo ""
-          echo "📋 Verifying deployment manifest:"
-          grep -A 2 "image:" k8s/deployment.yaml || true
+          echo "SECRET_NAME=$SECRET_NAME" >> $GITHUB_ENV
 
       - name: Deploy to k3s
         run: |
@@ -204,6 +171,23 @@ jobs:
           # Deploy application
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
+
+      - name: Update deployment image
+        run: |
+          echo "🔄 Updating deployment image to: ${{ env.IMAGE_TAG }}"
+          kubectl set image deployment/openchat-web \
+            openchat-web=${{ env.IMAGE_TAG }} \
+            -n ${{ secrets.K3S_NAMESPACE }}
+
+          # Add imagePullSecrets if needed
+          if [ -n "${{ env.SECRET_NAME }}" ]; then
+            echo "🔐 Adding imagePullSecrets: ${{ env.SECRET_NAME }}"
+            kubectl patch deployment openchat-web \
+              -n ${{ secrets.K3S_NAMESPACE }} \
+              -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"${{ env.SECRET_NAME }}"}]}}}}'
+          fi
+
+          echo "✅ Deployment updated successfully"
 
       - name: Check deployment status
         run: |
