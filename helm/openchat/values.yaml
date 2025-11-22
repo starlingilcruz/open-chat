@@ -1,12 +1,8 @@
-# Default values for openchat
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 # Global settings
 global:
   namespace: openchat
   environment: development
-  createNamespace: false  # Set to true if namespace doesn't exist
+  createNamespace: false
 
 # Application configuration
 app:
@@ -21,7 +17,6 @@ web:
     pullPolicy: Always  # Always pull for mutable tags (development, latest, etc.)
 
   imagePullSecrets: []
-  # - name: ghcr-secret
 
   service:
     type: ClusterIP
@@ -151,7 +146,7 @@ ingress:
 # Note: Certificates and ClusterIssuers are typically managed separately
 # Set enabled to false if they already exist in your cluster
 certManager:
-  enabled: false  # Disabled by default - manage certificates separately
+  enabled: false
   staging:
     enabled: false
     email: your-email@example.com
