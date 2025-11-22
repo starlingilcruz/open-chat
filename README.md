@@ -8,7 +8,8 @@ Real-time chat application built with Django, Channels, and Redis Streams.
 ## 🚀 Live Demo
 
 **Live App**: [http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com](http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/login)
-***Live App - Development** [https://rocketbyte.duckdns.org](https://rocketbyte.duckdns.org)
+
+**Live App - Development** [https://rocketbyte.duckdns.org](https://rocketbyte.duckdns.org)
 
 ### Test Accounts
 
@@ -22,7 +23,8 @@ You can use these pre-existing accounts to explore the application:
 | root@openchat.com      | Root@123456   | Admin |
 
 **Admin Portal**: [http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/admin](http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/admin)
-***Admin Portal - Development*** [https://rocketbyte.duckdns.org/admin](https://rocketbyte.duckdns.org/admin)
+
+**Admin Portal - Development** [https://rocketbyte.duckdns.org/admin](https://rocketbyte.duckdns.org/admin)
 
 ### Getting Started
 
