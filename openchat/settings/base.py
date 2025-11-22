@@ -31,6 +31,12 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in csrf_trusted_origins_str.split(",") if origin.strip()
 ]
 
+# Proxy SSL header (for when behind nginx/traefik ingress)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Use X-Forwarded-Host header for host validation (for K8s health checks)
+USE_X_FORWARDED_HOST = True
+
 # Application definition
 INSTALLED_APPS = [
     "daphne",

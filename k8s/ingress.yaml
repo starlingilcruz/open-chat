@@ -4,21 +4,21 @@ metadata:
   name: openchat-ingress
   namespace: openchat
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   tls:
-  - hosts:
-    - rocketbyte.duckdns.org
-    secretName: openchat-tls
+   - hosts:
+       - rocketbyte.duckdns.org
+     secretName: ssl-cert-prod
   rules:
-  - host: rocketbyte.duckdns.org
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: openchat-web
-            port:
-              number: 80
+    - host: rocketbyte.duckdns.org
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: openchat-web
+              port:
+                number: 80
