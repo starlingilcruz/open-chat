@@ -1,0 +1,27 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }} -n {{ .Values.global.namespace }}
+  $ helm get all {{ .Release.Name }} -n {{ .Values.global.namespace }}
+
+Application endpoints:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  https://{{ .host }}
+{{- end }}
+{{- else }}
+  Get the application URL by running:
+    export POD_NAME=$(kubectl get pods --namespace {{ .Values.global.namespace }} -l "app={{ .Values.app.name }},component=web" -o jsonpath="{.items[0].metadata.name}")
+    kubectl --namespace {{ .Values.global.namespace }} port-forward $POD_NAME 8000:8000
+    echo "Visit http://127.0.0.1:8000 to access the application"
+{{- end }}
+
+To check the status of your deployment:
+  kubectl get pods -n {{ .Values.global.namespace }}
+  kubectl get svc -n {{ .Values.global.namespace }}
+
+To view application logs:
+  kubectl logs -l app={{ .Values.app.name }},component=web -n {{ .Values.global.namespace }} --tail=100 -f

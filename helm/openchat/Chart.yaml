@@ -1,0 +1,12 @@
+apiVersion: v2
+name: openchat
+description: A Helm chart for OpenChat Django application
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - django
+  - chat
+  - openchat
+maintainers:
+  - name: OpenChat Team

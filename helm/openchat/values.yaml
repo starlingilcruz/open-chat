@@ -1,0 +1,159 @@
+# Default values for openchat
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global settings
+global:
+  namespace: openchat
+  environment: development
+
+# Application configuration
+app:
+  name: openchat
+  replicaCount: 1
+
+# Web application (Django)
+web:
+  image:
+    repository: ghcr.io/PLACEHOLDER_REPO
+    tag: development-latest
+    pullPolicy: IfNotPresent
+
+  imagePullSecrets: []
+  # - name: ghcr-secret
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8000
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: 16-alpine
+
+  service:
+    port: 5432
+
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 10Gi
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+# Redis configuration
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: 7-alpine
+
+  service:
+    port: 6379
+
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 5Gi
+
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+# ConfigMap data
+config:
+  postgresHost: "openchat-db"
+  postgresPort: "5432"
+  postgresUser: "openchat"
+  redisUrl: "redis://openchat-redis:6379/0"
+  redisHost: "openchat-redis"
+  debug: "False"
+  djangoSettingsModule: "openchat.settings.prod"
+  allowedHosts: "*"
+  csrfTrustedOrigins: "https://rocketbyte.duckdns.org"
+  sessionCookieSecure: "True"
+  csrfCookieSecure: "True"
+  secureSslRedirect: "False"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: rocketbyte.duckdns.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - rocketbyte.duckdns.org
+      secretName: ssl-cert-prod
+
+# Cert-manager configuration
+certManager:
+  enabled: true
+  staging:
+    enabled: true
+    email: your-email@example.com
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+  production:
+    enabled: true
+    email: your-email@example.com
+    server: https://acme-v02.api.letsencrypt.org/directory

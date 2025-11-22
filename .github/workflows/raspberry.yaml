@@ -116,37 +116,41 @@ jobs:
             echo "ℹ️  For public packages, this is fine"
           fi
 
-      - name: Prepare deployment configuration
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+
+      - name: Deploy with Helm
         run: |
           IMAGE_BASE="ghcr.io/${{ github.repository }}"
           IMAGE_TAG="${IMAGE_BASE}:development"
 
-          echo "📦 Using image tag: $IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "📦 Using image: $IMAGE_TAG"
 
-          # Determine which image pull secret to use (if any)
-          SECRET_NAME=""
+          # Prepare Helm values for image pull secrets
+          IMAGE_PULL_SECRETS=""
           if [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
-            SECRET_NAME="ghcr-secret"
+            IMAGE_PULL_SECRETS="--set web.imagePullSecrets[0].name=ghcr-secret"
           elif [ -n "${{ secrets.K3S_REGISTRY_URL }}" ]; then
-            SECRET_NAME="regcred"
+            IMAGE_PULL_SECRETS="--set web.imagePullSecrets[0].name=regcred"
           fi
-          echo "SECRET_NAME=$SECRET_NAME" >> $GITHUB_ENV
 
-      - name: Deploy to k3s
+          # Deploy using Helm
+          helm upgrade --install openchat ./helm/openchat \
+            --create-namespace \
+            --namespace ${{ secrets.K3S_NAMESPACE }} \
+            --set web.image.repository="${IMAGE_BASE%:*}" \
+            --set web.image.tag="development" \
+            --set global.namespace=${{ secrets.K3S_NAMESPACE }} \
+            $IMAGE_PULL_SECRETS \
+            --wait \
+            --timeout 10m
+
+          echo "✅ Helm deployment completed"
+
+      - name: Wait for dependencies to be ready
         run: |
-          # Apply Kubernetes manifests in order
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/configmap.yaml
-
-          # Deploy database and Redis first
-          kubectl apply -f k8s/postgres-pvc.yaml
-          kubectl apply -f k8s/postgres-deployment.yaml
-          kubectl apply -f k8s/postgres-service.yaml
-          kubectl apply -f k8s/redis-pvc.yaml
-          kubectl apply -f k8s/redis-deployment.yaml
-          kubectl apply -f k8s/redis-service.yaml
-
           # Wait for database and Redis to be ready
           echo "⏳ Waiting for PostgreSQL to be ready..."
           kubectl wait --for=condition=ready pod -l app=openchat,component=db \
@@ -167,27 +171,6 @@ jobs:
           else
             echo "⚠️  No Redis pod found"
           fi
-
-          # Deploy application
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/deployment.yaml
-
-      - name: Update deployment image
-        run: |
-          echo "🔄 Updating deployment image to: ${{ env.IMAGE_TAG }}"
-          kubectl set image deployment/openchat-web \
-            openchat-web=${{ env.IMAGE_TAG }} \
-            -n ${{ secrets.K3S_NAMESPACE }}
-
-          # Add imagePullSecrets if needed
-          if [ -n "${{ env.SECRET_NAME }}" ]; then
-            echo "🔐 Adding imagePullSecrets: ${{ env.SECRET_NAME }}"
-            kubectl patch deployment openchat-web \
-              -n ${{ secrets.K3S_NAMESPACE }} \
-              -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"${{ env.SECRET_NAME }}"}]}}}}'
-          fi
-
-          echo "✅ Deployment updated successfully"
 
       - name: Check deployment status
         run: |
