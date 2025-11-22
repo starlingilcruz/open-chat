@@ -6,6 +6,7 @@
 global:
   namespace: openchat
   environment: development
+  createNamespace: false  # Set to true if namespace doesn't exist
 
 # Application configuration
 app:
