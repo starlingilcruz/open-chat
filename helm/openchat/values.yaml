@@ -148,13 +148,15 @@ ingress:
       secretName: ssl-cert-prod
 
 # Cert-manager configuration
+# Note: Certificates and ClusterIssuers are typically managed separately
+# Set enabled to false if they already exist in your cluster
 certManager:
-  enabled: true
+  enabled: false  # Disabled by default - manage certificates separately
   staging:
-    enabled: true
+    enabled: false
     email: your-email@example.com
     server: https://acme-staging-v02.api.letsencrypt.org/directory
   production:
-    enabled: true
+    enabled: false
     email: your-email@example.com
     server: https://acme-v02.api.letsencrypt.org/directory
