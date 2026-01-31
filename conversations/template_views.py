@@ -46,9 +46,7 @@ class ChatRoomTemplateView(LoginRequiredMixin, View):
     login_url = "/login"
 
     def get(self, request, conversation_id):
-        print(f"Conversation ID: {conversation_id}")
         conversation = get_object_or_404(Conversation, id=conversation_id)
-        print(f"Conversation: {conversation}")
 
         # Check if user is a participant
         participant = Participant.objects.filter(
