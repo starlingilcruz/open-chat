@@ -35,7 +35,7 @@ include = '\.pyi?$'
 exclude = '''
 /(
     \.git
-  | \.venv
+  | \.?venv
   | migrations
   | __pycache__
 )/
@@ -52,6 +52,7 @@ target-version = "py39"
 exclude = [
     ".git",
     ".venv",
+    "venv",
     "migrations",
     "__pycache__",
 ]
