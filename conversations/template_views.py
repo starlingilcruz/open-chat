@@ -4,6 +4,7 @@ Template-based views for conversations
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.views import View
 
 from .models import Conversation, Participant
@@ -13,7 +14,7 @@ from .serializers import ConversationCreateSerializer
 class ConversationListTemplateView(LoginRequiredMixin, View):
     """List all conversations for the current user"""
 
-    login_url = "/login"
+    login_url = reverse_lazy("login")
 
     def get(self, request):
         conversations = Conversation.objects.filter(participants__user=request.user).distinct()
@@ -23,7 +24,7 @@ class ConversationListTemplateView(LoginRequiredMixin, View):
 class CreateConversationTemplateView(LoginRequiredMixin, View):
     """Create a new conversation"""
 
-    login_url = "/login"
+    login_url = reverse_lazy("login")
 
     def post(self, request):
         name = request.POST.get("name")
@@ -43,7 +44,7 @@ class CreateConversationTemplateView(LoginRequiredMixin, View):
 class ChatRoomTemplateView(LoginRequiredMixin, View):
     """Chat room view"""
 
-    login_url = "/login"
+    login_url = reverse_lazy("login")
 
     def get(self, request, conversation_id):
         conversation = get_object_or_404(Conversation, id=conversation_id)

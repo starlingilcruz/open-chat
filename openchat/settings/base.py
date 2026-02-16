@@ -183,7 +183,11 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files
-STATIC_URL = "static/"
+# Include subpath prefix in STATIC_URL when FORCE_SCRIPT_NAME is set
+if FORCE_SCRIPT_NAME:
+    STATIC_URL = f"{FORCE_SCRIPT_NAME}/static/"
+else:
+    STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "staticfiles": {
