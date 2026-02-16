@@ -11,29 +11,12 @@ Real-time chat application built with Django, Channels, and Redis Streams.
 
 **Live App - Development** [https://rocketbyte.duckdns.org](https://rocketbyte.duckdns.org)
 
-### Test Accounts
-
-You can use these pre-existing accounts to explore the application:
-
-| Email                  | Password      | Role  |
-|------------------------|---------------|-------|
-| starlin@openchat.com   | Admin@123456  | User  |
-| nancy@openchat.com     | Admin@123456  | User  |
-| jd@openchat.com        | Admin@123456  | User  |
-| root@openchat.com      | Root@123456   | Admin |
-
-**Admin Portal**: [http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/admin](http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/admin)
-
-**Admin Portal - Development** [https://rocketbyte.duckdns.org/admin](https://rocketbyte.duckdns.org/admin)
-
 ### Getting Started
 
 1. **Sign Up**: Create a new account or use one of the test accounts above
 2. **Create Conversation**: Start a new conversation
 3. **Add Participants**: Invite other users to the conversation by entering their email address
 4. **Start Chatting**: Send real-time messages with WebSocket support
-
-<!-- ![Demo Screenshot](misc/demo.png) -->
 
 ## Features
 
@@ -124,6 +107,36 @@ Push to master → Tests run → Build → Deploy to EB → Migrations → Live!
 ```
 
 For detailed instructions, see **[DEPLOYMENT.md](DEPLOYMENT.md)**
+
+### Subpath Deployment (e.g., /openchat)
+
+When deploying the application under a URL subpath (like `/openchat` instead of root `/`), the application includes built-in support with proper configuration:
+
+**Requirements:**
+- Set `FORCE_SCRIPT_NAME` environment variable to your subpath (e.g., `/openchat`)
+- Configure ingress to pass the `X-Script-Name` header
+- Includes middleware for both HTTP and WebSocket path handling
+
+**Key Components:**
+- `common.middleware.ScriptNameMiddleware` - Handles HTTP request path normalization
+- `openchat.asgi.ScriptNameMiddleware` - Handles WebSocket path normalization
+- Session and CSRF cookies automatically configured for the subpath
+- JavaScript client-side path detection for API and WebSocket URLs
+
+**Example Helm Configuration:**
+```yaml
+config:
+  forceScriptName: "/openchat"
+
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Script-Name /openchat;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+```
+
+This ensures all URLs, cookies, and WebSocket connections work correctly under the subpath.
 
 ## Local Development Setup
 
