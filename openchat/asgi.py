@@ -27,6 +27,10 @@ class ScriptNameMiddleware:
 
     async def __call__(self, scope, receive, send):
         if scope["type"] == "websocket":
+            # Ensure path starts with /
+            if not scope["path"].startswith("/"):
+                scope["path"] = "/" + scope["path"]
+
             # Get the script name from headers
             headers = dict(scope.get("headers", []))
             script_name = headers.get(b"x-script-name", b"").decode("utf-8")
@@ -34,7 +38,7 @@ class ScriptNameMiddleware:
             if script_name and scope["path"].startswith(script_name):
                 # Strip the script name from the path
                 scope["path"] = scope["path"][len(script_name) :]
-                # Ensure path starts with /
+                # Ensure path still starts with /
                 if not scope["path"].startswith("/"):
                     scope["path"] = "/" + scope["path"]
 
