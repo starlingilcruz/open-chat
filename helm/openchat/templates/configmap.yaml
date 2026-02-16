@@ -18,3 +18,4 @@ data:
   SESSION_COOKIE_SECURE: {{ .Values.config.sessionCookieSecure | quote }}
   CSRF_COOKIE_SECURE: {{ .Values.config.csrfCookieSecure | quote }}
   SECURE_SSL_REDIRECT: {{ .Values.config.secureSslRedirect | quote }}
+  FORCE_SCRIPT_NAME: {{ .Values.config.forceScriptName | default "/openchat" | quote }}

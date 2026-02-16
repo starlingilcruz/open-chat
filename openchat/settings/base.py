@@ -37,6 +37,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # Use X-Forwarded-Host header for host validation (for K8s health checks)
 USE_X_FORWARDED_HOST = True
 
+# Script name for when app is behind a subpath (e.g., /openchat)
+FORCE_SCRIPT_NAME = os.getenv("FORCE_SCRIPT_NAME", "")
+
 # Application definition
 INSTALLED_APPS = [
     "daphne",

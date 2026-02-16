@@ -78,10 +78,23 @@
     const currentUserId = {{ user.id }};
     let socket = null;
 
+    // Get base path from current URL (e.g., '/openchat' or '')
+    function getBasePath() {
+        const path = window.location.pathname;
+        // Extract base path if exists (e.g., /openchat from /openchat/conversations/...)
+        const match = path.match(/^(\/[^/]+)?\//);
+        if (match && match[1] && !match[1].includes('conversations') && !match[1].includes('login') && !match[1].includes('signup')) {
+            return match[1];
+        }
+        return '';
+    }
+
+    const basePath = getBasePath();
+
     // Connect to WebSocket
     function connectWebSocket() {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws/conversations/${conversationId}/`;
+        const wsUrl = `${protocol}//${window.location.host}${basePath}/ws/conversations/${conversationId}/`;
 
         socket = new WebSocket(wsUrl);
 
@@ -112,7 +125,7 @@
 
     // Load message history
     function loadMessageHistory() {
-        fetch(`/api/v1/conversations/${conversationId}/messages`, {
+        fetch(`${basePath}/api/v1/conversations/${conversationId}/messages`, {
             credentials: 'include'
         })
         .then(response => response.json())
@@ -169,7 +182,7 @@
         e.preventDefault();
         const userEmail = document.getElementById('userEmail').value;
 
-        fetch(`/api/v1/conversations/${conversationId}/add_participant/`, {
+        fetch(`${basePath}/api/v1/conversations/${conversationId}/add_participant/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
