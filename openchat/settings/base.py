@@ -40,6 +40,11 @@ USE_X_FORWARDED_HOST = True
 # Script name for when app is behind a subpath (e.g., /openchat)
 FORCE_SCRIPT_NAME = os.getenv("FORCE_SCRIPT_NAME", "")
 
+# Session cookie settings for subpath deployments
+if FORCE_SCRIPT_NAME:
+    SESSION_COOKIE_PATH = FORCE_SCRIPT_NAME
+    CSRF_COOKIE_PATH = FORCE_SCRIPT_NAME
+
 # Application definition
 INSTALLED_APPS = [
     "daphne",
