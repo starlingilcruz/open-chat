@@ -38,7 +38,10 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
 # Script name for when app is behind a subpath (e.g., /openchat)
+# Ensure it starts with / if provided
 FORCE_SCRIPT_NAME = os.getenv("FORCE_SCRIPT_NAME", "")
+if FORCE_SCRIPT_NAME and not FORCE_SCRIPT_NAME.startswith("/"):
+    FORCE_SCRIPT_NAME = f"/{FORCE_SCRIPT_NAME}"
 
 # Session cookie settings for subpath deployments
 if FORCE_SCRIPT_NAME:

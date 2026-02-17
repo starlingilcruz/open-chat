@@ -6,6 +6,8 @@ import logging
 
 from django.db import connection
 from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -55,3 +57,13 @@ def health_check(request):
         },
         status=response_status,
     )
+
+
+def root_redirect(request):
+    """
+    Redirect root to login or conversation list based on auth status.
+    Uses reverse() to ensure proper URL generation with FORCE_SCRIPT_NAME.
+    """
+    if request.user.is_authenticated:
+        return redirect(reverse("conversation-list"))
+    return redirect(reverse("login"))
