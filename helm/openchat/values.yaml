@@ -125,17 +125,23 @@ config:
   sessionCookieSecure: "True"
   csrfCookieSecure: "True"
   secureSslRedirect: "False"
+  forceScriptName: "/openchat"
 
 # Ingress configuration
 ingress:
   enabled: true
   className: nginx
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Script-Name /openchat;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
   hosts:
     - host: rocketbyte.duckdns.org
       paths:
-        - path: /
+        - path: /openchat
           pathType: Prefix
   tls:
     - hosts:

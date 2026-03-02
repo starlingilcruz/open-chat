@@ -4,10 +4,9 @@ URL configuration for openchat project
 
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import RedirectView
 
 from accounts.template_views import LoginTemplateView, LogoutTemplateView, SignupTemplateView
-from common.views import health_check
+from common.views import health_check, root_redirect
 from conversations.template_views import (
     ChatRoomTemplateView,
     ConversationListTemplateView,
@@ -20,7 +19,7 @@ urlpatterns = [
     # Health check
     path("healthz", health_check, name="health-check"),
     # Web UI
-    path("", RedirectView.as_view(url="/login", permanent=False)),
+    path("", root_redirect, name="root"),
     path("login", LoginTemplateView.as_view(), name="login"),
     path("signup", SignupTemplateView.as_view(), name="signup"),
     path("logout", LogoutTemplateView.as_view(), name="logout"),

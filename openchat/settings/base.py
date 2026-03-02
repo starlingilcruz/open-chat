@@ -37,6 +37,17 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # Use X-Forwarded-Host header for host validation (for K8s health checks)
 USE_X_FORWARDED_HOST = True
 
+# Script name for when app is behind a subpath (e.g., /openchat)
+# Ensure it starts with / if provided
+FORCE_SCRIPT_NAME = os.getenv("FORCE_SCRIPT_NAME", "")
+if FORCE_SCRIPT_NAME and not FORCE_SCRIPT_NAME.startswith("/"):
+    FORCE_SCRIPT_NAME = f"/{FORCE_SCRIPT_NAME}"
+
+# Session cookie settings for subpath deployments
+if FORCE_SCRIPT_NAME:
+    SESSION_COOKIE_PATH = FORCE_SCRIPT_NAME
+    CSRF_COOKIE_PATH = FORCE_SCRIPT_NAME
+
 # Application definition
 INSTALLED_APPS = [
     "daphne",
@@ -56,6 +67,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "common.middleware.ScriptNameMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -174,7 +186,11 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files
-STATIC_URL = "static/"
+# STATIC_URL must include FORCE_SCRIPT_NAME prefix for subpath deployments
+if FORCE_SCRIPT_NAME:
+    STATIC_URL = f"{FORCE_SCRIPT_NAME}/static/"
+else:
+    STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "staticfiles": {
