@@ -9,7 +9,7 @@ Real-time chat application built with Django, Channels, and Redis Streams.
 
 **Live App**: [http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com](http://open-chat-prod.eba-pub2xpmm.us-east-1.elasticbeanstalk.com/login)
 
-**Live App - Development** [https://rocketbyte.duckdns.org/openchat](https://rocketbyte.duckdns.org/openchat)
+**Live App - Development** [https://openchat.rotbyte.com](https://openchat.rotbyte.com)
 
 ### Getting Started
 
