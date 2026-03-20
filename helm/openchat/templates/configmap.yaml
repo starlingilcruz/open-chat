@@ -15,6 +15,7 @@ data:
   DJANGO_SETTINGS_MODULE: {{ .Values.config.djangoSettingsModule | quote }}
   ALLOWED_HOSTS: {{ .Values.config.allowedHosts | quote }}
   CSRF_TRUSTED_ORIGINS: {{ .Values.config.csrfTrustedOrigins | quote }}
+  ALLOWED_WEBSOCKET_ORIGINS: {{ .Values.config.allowedWebsocketOrigins | default "" | quote }}
   SESSION_COOKIE_SECURE: {{ .Values.config.sessionCookieSecure | quote }}
   CSRF_COOKIE_SECURE: {{ .Values.config.csrfCookieSecure | quote }}
   SECURE_SSL_REDIRECT: {{ .Values.config.secureSslRedirect | quote }}

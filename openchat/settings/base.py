@@ -43,10 +43,11 @@ FORCE_SCRIPT_NAME = os.getenv("FORCE_SCRIPT_NAME", "")
 if FORCE_SCRIPT_NAME and not FORCE_SCRIPT_NAME.startswith("/"):
     FORCE_SCRIPT_NAME = f"/{FORCE_SCRIPT_NAME}"
 
-# Session cookie settings for subpath deployments
-if FORCE_SCRIPT_NAME:
-    SESSION_COOKIE_PATH = FORCE_SCRIPT_NAME
-    CSRF_COOKIE_PATH = FORCE_SCRIPT_NAME
+# Cookie path must stay at "/" to support both subpath (duckdns) and subdomain (rotbyte.com)
+# routing from a single deployment. Scoping to FORCE_SCRIPT_NAME breaks sessions when the
+# app is accessed via a domain where the path doesn't carry the script name prefix.
+SESSION_COOKIE_PATH = "/"
+CSRF_COOKIE_PATH = "/"
 
 # Application definition
 INSTALLED_APPS = [
