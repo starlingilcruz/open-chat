@@ -124,9 +124,14 @@ jobs:
       - name: Deploy with Helm
         run: |
           IMAGE_BASE="ghcr.io/${{ github.repository }}"
-          IMAGE_TAG="${IMAGE_BASE}:development"
+          # Use the immutable SHA-based tag so Kubernetes detects a spec change
+          # and rolls out new pods on every deploy. The mutable "development" tag
+          # alone never changes, so pods would not restart even after a new image push.
+          SHORT_SHA="${{ github.sha }}"
+          SHORT_SHA="${SHORT_SHA:0:7}"
+          IMAGE_TAG="development-${SHORT_SHA}"
 
-          echo "📦 Using image: $IMAGE_TAG"
+          echo "📦 Using image: ${IMAGE_BASE}:${IMAGE_TAG}"
 
           # Prepare Helm values for image pull secrets
           IMAGE_PULL_SECRETS=""
@@ -140,8 +145,8 @@ jobs:
           helm upgrade --install openchat ./helm/openchat \
             --create-namespace \
             --namespace ${{ secrets.K3S_NAMESPACE }} \
-            --set web.image.repository="${IMAGE_BASE%:*}" \
-            --set web.image.tag="development" \
+            --set web.image.repository="${IMAGE_BASE}" \
+            --set web.image.tag="${IMAGE_TAG}" \
             --set global.namespace=${{ secrets.K3S_NAMESPACE }} \
             $IMAGE_PULL_SECRETS \
             --wait \

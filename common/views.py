@@ -4,7 +4,6 @@ Common views including health check
 
 import logging
 
-from django.conf import settings
 from django.db import connection
 from django.http import JsonResponse
 from django.shortcuts import redirect
@@ -63,17 +62,10 @@ def health_check(request):
 def root_redirect(request):
     """
     Redirect root to login or conversation list based on auth status.
-    Respects FORCE_SCRIPT_NAME for subpath deployments.
+    ScriptNameMiddleware has already set the correct script prefix via
+    set_script_prefix(), so reverse() returns the right path for both
+    the duckdns subpath route and the rotbyte.com subdomain route.
     """
-    # Get script name from settings or request
-    script_name = getattr(settings, "FORCE_SCRIPT_NAME", "") or request.META.get("SCRIPT_NAME", "")
-
     if request.user.is_authenticated:
-        target = reverse("conversation-list")
-    else:
-        target = reverse("login")
-
-    # Prepend script name if not already included
-    if script_name and not target.startswith(script_name):
-        return redirect(f"{script_name}{target}")
-    return redirect(target)
+        return redirect(reverse("conversation-list"))
+    return redirect(reverse("login"))
