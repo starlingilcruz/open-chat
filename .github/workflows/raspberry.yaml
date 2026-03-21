@@ -129,7 +129,7 @@ jobs:
           # alone never changes, so pods would not restart even after a new image push.
           SHORT_SHA="${{ github.sha }}"
           SHORT_SHA="${SHORT_SHA:0:7}"
-          IMAGE_TAG="development-sha-${SHORT_SHA}"
+          IMAGE_TAG="development-${SHORT_SHA}"
 
           echo "📦 Using image: ${IMAGE_BASE}:${IMAGE_TAG}"
 
